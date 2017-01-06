@@ -1,0 +1,129 @@
+2001-06-23 17:06   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile: Bumped version to 0.3.2
+
+2001-06-23 17:06   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile, xpconfig/internal-build-script: Fixed makefile to
+	reliably invoke xpconfig's makefile without running configure every
+	time
+
+2001-06-23 16:54   Joe Mason <jcmason@uwaterloo.ca>
+
+	* glkloader.c, linux_defines.c, xpconfig/generate_header.pl,
+	xpconfig/platform_rcfile.c, xpconfig/xpconfig.h: Added -v startup
+	option to list all config files scanned
+
+2001-06-23 16:29   Joe Mason <jcmason@uwaterloo.ca>
+
+	* xpconfig/platform_rcfile.c: Complete last bug fix: remove
+	debugging output and move test for no more direntries to top of
+	loop
+
+2001-06-23 16:16   Joe Mason <jcmason@uwaterloo.ca>
+
+	* xpconfig/platform_rcfile.c: Bugfix: directory looping was ending
+	prematurely.  Also, now ignores all files starting with ., not just
+	. and ..
+
+2001-06-23 16:14   Joe Mason <jcmason@uwaterloo.ca>
+
+	* README, glkloaderrc.sample: Fixed typos in README and updated
+	glkloaderrc.sample to new format
+
+2001-06-23 05:40   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile: Bumped version to 0.3.1
+
+2001-06-23 05:25   Joe Mason <jcmason@uwaterloo.ca>
+
+	* makefile-samples/Makefile.models: Add another makefile sample
+
+2001-06-23 05:24   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile, README, glkloader.c,
+	makefile-samples/Makefile.cheapglk,
+	makefile-samples/Makefile.glkterm, makefile-samples/Makefile.xglk,
+	xpconfig/AUTHORS, xpconfig/COPYING, xpconfig/ChangeLog,
+	xpconfig/INSTALL, xpconfig/Makefile.am, xpconfig/Makefile.in,
+	xpconfig/NEWS, xpconfig/README, xpconfig/acconfig.h,
+	xpconfig/aclocal.m4, xpconfig/applist.c, xpconfig/applist.h,
+	xpconfig/config.guess, xpconfig/config.h.in, xpconfig/config.sub,
+	xpconfig/configure, xpconfig/configure.in,
+	xpconfig/generate_header.pl, xpconfig/install-sh,
+	xpconfig/keylist.c, xpconfig/keylist.h, xpconfig/ltmain.sh,
+	xpconfig/missing, xpconfig/mkinstalldirs, xpconfig/platform.h,
+	xpconfig/platform_rcfile.c, xpconfig/sectionlist.c,
+	xpconfig/sectionlist.h, xpconfig/stamp-h.in, xpconfig/tokenlist.c,
+	xpconfig/tokenlist.h, xpconfig/xpcdefines.h, xpconfig/xpconfig.c,
+	xpconfig/xpconfig.h: Added snapshot of xpconfig to make single
+	distribution, and update Makefile.  Write better installation
+	instructions for README.
+
+2001-04-14 02:35   Joe Mason <jcmason@uwaterloo.ca>
+
+	* glkloader.c: Added xpconfig call to set the name of the config
+	file with the -rc command line switch
+
+2001-04-12 01:38   Joe Mason <jcmason@uwaterloo.ca>
+
+	* glkloader.c: xpconfig based parsing can now load Glk libs by
+	short name or full path, just like the original system.  And it's
+	better structured, too!
+
+2001-04-10 03:45   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile, README, config.c, config.h, glkloader.c,
+	glkloaderrc.sample: Abstracted out config file parsing into
+	xpconfig library.  Changed config file format to read a fallback
+	list of libraries instead of a single default.
+
+2001-04-09 00:41   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Changelog: Now using cvs2cl to generate ChangeLog from CVS
+	instead of writing it by hand
+
+2001-03-20 01:08   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Changelog, README, readme.txt: Moved readme.txt to the more
+	visible README
+
+2001-03-20 01:06   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Changelog, Makefile: Updated version number and Changelog for
+	release 0.3.0
+
+2001-03-20 01:02   Joe Mason <jcmason@uwaterloo.ca>
+
+	* glkloaderrc.sample, readme.txt: Documentation.
+
+2001-03-20 00:50   Joe Mason <jcmason@uwaterloo.ca>
+
+	* License.txt, config.c, config.h, defines.h, glkloader.c,
+	linux_defines.c, linux_defines.h: Finished implementing basic
+	config file.  Fixed formatting.  Restored garbled License.txt.
+
+2001-03-19 02:13   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile, config.c, glkloader.c: Reads key/value pairs from
+	config file.  Need to add error handling.
+
+2001-03-14 00:14   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile, config.c, config.h, glkloader.c: First stab at adding
+	config file
+
+2001-03-13 22:07   Joe Mason <jcmason@uwaterloo.ca>
+
+	* License.txt, blorbfuncs.c, defines.h, linux_defines.h, Changelog,
+	Makefile, dispafuncs.c, func.txt, generate_glkfuncs.pl, gi_blorb.c,
+	gi_blorb.h, gi_dispa.c, gi_dispa.h, glk.h, glkloader.c,
+	linux_defines.c, readme.txt, unixfuncs.c: Initial revision
+
+2001-03-13 22:07   Joe Mason <jcmason@uwaterloo.ca>
+
+	* License.txt, blorbfuncs.c, defines.h, linux_defines.h, Changelog,
+	Makefile, dispafuncs.c, func.txt, generate_glkfuncs.pl, gi_blorb.c,
+	gi_blorb.h, gi_dispa.c, gi_dispa.h, glk.h, glkloader.c,
+	linux_defines.c, readme.txt, unixfuncs.c: Imported glkloader-0.2.0
+

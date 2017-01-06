@@ -1,0 +1,61 @@
+2001-06-23 05:23   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.am: Add generate_header.pl to list of sources for
+	distribution
+
+2001-06-23 04:13   Joe Mason <jcmason@uwaterloo.ca>
+
+	* applist.c, keylist.c, sectionlist.c, tokenlist.c, xpconfig.c:
+	Make string comparisons case-insensitive
+
+2001-04-22 00:54   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.am, applist.c, applist.h, generate_header.pl, keylist.c,
+	keylist.h, platform_rcfile.c, sectionlist.c, sectionlist.h,
+	tokenlist.c, tokenlist.h, xpcdefines.h, xpconfig.c, xpconfig.h:
+	Implemented RCFILE method.
+
+2001-04-14 15:16   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.am, acconfig.h, configure.in: Autoconf works now.
+
+2001-04-14 03:39   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.am, acconfig.h, applist.c, applist.h, configure.in,
+	keylist.c, platform.h, platform_rcfile.c, xpconfig.c, xpconfig.h:
+	Created the cross-platform interface, and added a stub
+	implementation for the RCFILE method.  (autoconf still isn't
+	building the right file, though)
+
+2001-04-12 01:39   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.am, applist.c, applist.h, keylist.c, keylist.h,
+	sectionlist.c, sectionlist.h, tokenlist.c, tokenlist.h,
+	xpcdefines.h, xpconfig.c, xpconfig.h: Implemented all functions
+	except xpcInitialize/xpcFinalize.  Now all I need to do is make it
+	actually read the config file.
+
+2001-04-11 21:58   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.am, configure.in: Switched from static libs to libtool
+
+2001-04-10 03:46   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.am, xpconfig.c, xpconfig.h: Implemented basic interface
+	using stub functions
+
+2001-04-09 01:17   Joe Mason <jcmason@uwaterloo.ca>
+
+	* Makefile.cvs: Regenerate ChangeLog from CVS before running
+	Automake
+
+2001-04-09 01:15   Joe Mason <jcmason@uwaterloo.ca>
+
+	* AUTHORS, COPYING, INSTALL, Makefile.am, Makefile.cvs, NEWS,
+	README, configure.in, xpconfig.c, xpconfig.h: Initial revision
+
+2001-04-09 01:15   Joe Mason <jcmason@uwaterloo.ca>
+
+	* AUTHORS, COPYING, INSTALL, Makefile.am, Makefile.cvs, NEWS,
+	README, configure.in, xpconfig.c, xpconfig.h: Initial creation.
+

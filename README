@@ -25,6 +25,118 @@ GlkLoader can load libraries in the standard system library path: to use a
 library located elsewhere, either add the path to the LD_LIBRARY_PATH
 environment variable or use a full path name on the command line.
 
+Compiling GlkLoader - The Short Version
+=======================================
+
+Existing Glk libraries need a few changes in order to work with GlkLoader.
+
+Included in the source is a "makefile-samples" directory containing replacement 
+Makefiles for XGlk, GlkTerm and CheapGlk.  Simply copy the appropriate Makefile 
+over top of the Glk library's original Makefile and recompile it.  (For 
+example, if you have the XGlk source code in /usr/local/src/xglk and the 
+GlkLoader source code in /usr/local/src/glkloader, you would type:
+ 
+  cd /usr/local/src/xglk
+  cp /usr/local/src/glkloader/makefile-samples/Makefile.xglk Makefile
+  make
+  make install
+
+Now compile GlkLoader itself:
+
+  cd /usr/local/src/glkloader
+  make
+  make install
+
+Finally, edit the Makefile for the program you want to link with glkloader.
+Find a line that begins "LDFLAGS = ", and add "-rdynamic" to the end of it.
+If no such line exists, add
+
+  LDFLAGS = -rdynamic
+
+Then find the line which actually compiles the program (usually beginning with
+"$(CC) -o <program name>" or "$(LD) -o <program name>" and add "$LDFLAGS" to
+it.  See makefile-samples/Makefile.models for an example: you can compare it
+to the original Makefile for the models example programs.
+
+At last it's time to type the final "make", and see if your program builds and
+runs.
+
+Compiling GlkLoader - The Long Version
+=======================================
+
+Three things are needed for Glk libraries to work with GlkLoader:
+
+1) Compile Glk as a shared library.
+
+Your Glk library needs to be a shared library so that GlkLoader can load it
+dynamically.  Included in the source is a "makefile-samples" directory
+containing replacement Makefiles for XGlk, GlkTerm and CheapGlk.  Simply copy
+the appropriate Makefile over top of the Glk library's original Makefile and
+recompile it.  (For example, if you have the XGlk source code in
+/usr/local/src/xglk and the GlkLoader source code in /usr/local/src/glkloader,
+you would type:
+
+  cd /usr/local/src/xglk
+  cp /usr/local/src/glkloader/makefile-samples/Makefile.xglk Makefile
+  make
+
+If you need to convert another Glk library, you should be able to use these
+sample Makefiles as a guide.  The important thing is to link it with ld 
+instead of ranlib.  This topic is too complicated to cover here - I hope you
+know what you're doing.
+
+2) Make certain your shared libraries contain full dependency information.
+
+Glk libraries will depend on other system libraries: for example, GlkTerm uses
+Curses and XGlk uses libX, libpng and libjpeg.  Unfortunately, they are set up
+to link the main program with these libraries, like this:
+
+  dungeon --> libxglk.so
+          |
+          |-> libX.so
+          |
+          |-> libpng.so
+          |
+          --> libjpeg.so
+
+What we want is for it to be linked like this:
+
+  dungeon --> libxglk.so --> libX.so
+                         |
+                         |-> libpng.so
+                         |
+                         --> libjpeg.so
+
+That way the entire branch rooted at libxglk.so can be replaced with
+libglkloader.so, and then loaded dynamically.
+
+The Makefile should collect all the dependent libraries in the LIBS variable
+(which is then written to the Make.glk file for use in compiling the main
+program).  This list of LIBS needs to be passed to the linker.  Simply add
+$(LIBS) to the command line of ld if it is not already there.  The sample 
+Makefiles already include this modification. 
+
+Note that the Make.glk file is no longer used, since the main program is linked 
+with GlkLoader by including Make.glkloader instead of, for example, Make.xglk.
+
+3) Add -rdynamic to the argument list of ld in your main program.
+
+This ensures that all symbols in the main program are exported to all dynamic
+libraries, no matter when they are loaded.  If it is not used, when GlkLoader
+installs the actual Glk library the loader won't inform the main program that
+new symbols are available.  If you get the error, "Undefined symbol: 
+glkunix_startup", you've missed this step.
+
+Find a line that begins "LDFLAGS = ", and add "-rdynamic" to the end of it.
+If no such line exists, add
+
+  LDFLAGS = -rdynamic
+
+Then find the line which actually compiles the program (usually beginning with
+"$(CC) -o <program name>" or "$(LD) -o <program name>" and add "$LDFLAGS" to
+it.  See makefile-samples/Makefile.models for an example: you can compare it
+to the original Makefile for the models example programs.
+
 Using Configuration Files
 =========================
 
@@ -36,50 +148,43 @@ The config file consists of a series of section headers, each of which is
 followed by key/value pairs.  A key value pair is of the form "key = value".
 The sections and keys are as follows:
 
-  [Library]
-    name : a short name GlkLoader can use to identify this library
-    path : the full path of the library file (or, if the file is in the system
-           library path, simply the full name)
-
   [Default]
-    lib  : the name or path of the default library to load
+    libs   : a list of libraries that will be tried, in order
+
+  [library]   (where "library" is a short name used to identify a library)
+    path   : the full path of the library file (or, if the file is in the
+	         system library path, simply the full name)
+	params : a list of command line options to pass to the library 
 
 For example, you could use the following simple configuration file:
 
-  [Library]
-    name = x
+  [x]
     path = /usr/local/glk/xglk/libxglk.so
 
-  [Libary]
-    name = term
+  [term]
     path = /usr/local/glk/glkterm/libglkterm.so
 
 Then you could use the glkterm library by simply saying "-glk term" on the
 command line, rather than using the entire path.  If you add a [Default]
-section containing the line "lib = term", then you don't even need to do that.
+section containing the line "libs = term", then you don't even need to do that.
 GlkLoader will use the glkterm library if you don't give it any -glk argument
 at all.
 
+If you put more than one library in the [Default] section, GlkLoader will try
+them in order until one runs without errors.  If a library is given on the
+command line, however, GlkLoader will abort if it fails to load and ignore the
+[Default] section.
+
 A sample configuration file is included as glkloaderrc.sample.
 
-Compiling GlkLoader
-===================
-
-There are a few things that need to be done when compiling your main Glk
-library and main program:
-
-1) Compile Glk as a shared library.
-The accompanying makefile (based on the CheapGlk / GlkTerm / XGlk makefiles) is 
-an example of how to do this.
-
-2) Make certain your shared libraries contain full dependency information.
-Simply make sure you include all libraries your Glk library uses in the
-arguments to ld.  Since the provided makefiles already collect these in the
-$(LIBS) variable, you can simply add $(LIBS) to the end of the ld arguments.
-
-3) Add -rdynamic to the argument list of ld in your main program.
-This ensures that all symbols in the main program are exported to all dynamic
-libraries, no matter when they are loaded.
+The configuration file reader is actually a little more sophisticated: it can
+read from multiple files and merge their contents.  This allows you to create
+files with separate settings for each Glk library and distribute them 
+individually.  GlkLoader first reads all files in /etc/glkloader.d (for library
+specific settings), then /etc/glkloaderrc (for system defaults), then
+~/.glkloaderrc (for user defaults).  A good flexible setup would be to have
+/etc/glkloader.d/xglk.rc and /etc/glkloader.d/glkterm.rc contain the [x] and
+[term] sections, and /etc/glkloaderrc contain only the [Default] section.
 
 Further Information
 ===================

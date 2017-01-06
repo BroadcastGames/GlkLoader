@@ -1,0 +1,47 @@
+# Makefile for model.c and multiwin.c.
+
+# To use this, you must set three variables. GLKINCLUDEDIR must be the 
+# directory containing glk.h, glkstart.h, and the Make.library file.
+# GLKLIBDIR must be the directory containing the library.a file.
+# And GLKMAKEFILE must be the name of the Make.library file. Two
+# sets of values appear below; uncomment one of them and change the
+# directories appropriately.
+
+#GLKINCLUDEDIR = ../xglk
+#GLKLIBDIR = ../xglk
+#GLKMAKEFILE = Make.xglk
+
+#GLKINCLUDEDIR = ../glkterm
+#GLKLIBDIR = ../glkterm
+#GLKMAKEFILE = Make.glkterm
+
+#GLKINCLUDEDIR = ../cheapglk
+#GLKLIBDIR = ../cheapglk
+#GLKMAKEFILE = Make.cheapglk
+
+GLKINCLUDEDIR = ../glkloader
+GLKLIBDIR = ../glkloader
+GLKMAKEFILE = Make.glkloader
+
+# Pick a C compiler.
+#CC = cc
+CC = gcc -ansi
+
+OPTIONS = -g -rdynamic
+
+include $(GLKINCLUDEDIR)/$(GLKMAKEFILE)
+
+CFLAGS = $(OPTIONS) -I$(GLKINCLUDEDIR)
+LDFLAGS = -rdynamic
+LIBS = -L$(GLKLIBDIR) $(GLKLIB) $(LINKLIBS)
+
+all: model multiwin
+
+model: model.o glkstart.o
+	$(CC) $(LDFLAGS) -o model model.o glkstart.o $(LIBS)
+
+multiwin: multiwin.o glkstart.o
+	$(CC) $(LDFLAGS) -o multiwin multiwin.o glkstart.o $(LIBS)
+
+clean:
+	rm -f *~ *.o model multiwin

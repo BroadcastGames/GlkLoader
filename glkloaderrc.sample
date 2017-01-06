@@ -1,14 +1,12 @@
-[Library]
-name = term
+[Term]
 path = libglkterm.so
+params = -revgrid yes -border no
 
-[Library]
-name = x
+[X]
 path = libxglk.so
 
-[Library]
-name = cheap
-path = libcheapglk.so
+[Cheap]
+path = libcheapglk.so 
 
 [Default]
-lib = x
+libs = X Term Cheap

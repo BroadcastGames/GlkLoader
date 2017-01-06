@@ -1,18 +1,21 @@
-# Unix Makefile for GlkLoader library
+# Unix Makefile for CheapGlk library
 
-# GlkLoader 0.3.2
+# Based on the original by Andrew Plotkin.  Modified to create a shared
+# library by Joe Mason.
+
+# CheapGlk 0.8.7
 MAJOR=0
-MINOR=3
-MICRO=2
+MINOR=8
+MICRO=7
 
-# This generates two files. One, of course, is libglkloader.a -- the library
-# itself. The other is Make.glkloader; this is a snippet of Makefile code
+# This generates two files. One, of course, is libcheapglk.a -- the library
+# itself. The other is Make.cheapglk; this is a snippet of Makefile code
 # which locates the cheapglk library.
 #
-# When you install glkloader, you must put libglkloader.a in the lib directory,
-# and glk.h, glkstart.h, and Make.glkloader in the include directory.
+# When you install cheapglk, you must put libcheapglk.a in the lib directory,
+# and glk.h, glkstart.h, and Make.cheapglk in the include directory.
 
-GLKNAME = glkloader
+GLKNAME = cheapglk
 GLKINCLUDEDIR = /usr/local/include/glk/
 GLKLIBDIR = /usr/local/lib/
 
@@ -22,44 +25,34 @@ CC = gcc
 LINK = gcc
 INSTALL = install -g 0 -o 0
 
-OPTIONS = -g -Wall -fPIC -DLINUX
+OPTIONS = -g -O -ansi -Wall -fPIC
 INCLUDEDIRS = -I$(GLKINCLUDEDIR)
 
 CFLAGS = $(OPTIONS) $(INCLUDEDIRS)
 LDFLAGS = -rdynamic
-LIBDIRS =
-LIBS = -ldl
-
-XPCONFIG = -Lxpconfig/.libs -lxpconfig
 
 GLKLIBSTATIC = lib$(GLKNAME).a
 GLKLIBSHARED = lib$(GLKNAME).so
 GLKMAKEFILE = Make.$(GLKNAME)
 
 OBJS =  \
-	glkloader.o glkfuncs.o blorbfuncs.o dispafuncs.o unixfuncs.o \
-    linux_defines.o gi_blorb.o gi_dispa.o
+  cgfref.o cggestal.o cgmisc.o cgstream.o cgstyle.o cgwindow.o cgschan.o \
+  main.o gi_dispa.o gi_blorb.o cgblorb.o
 
-HEADERS = \
-	defines.h linux_defines.h
+HEADERS = cheapglk.h gi_dispa.h
 
 all: $(GLKLIBSTATIC) $(GLKLIBSHARED) $(GLKMAKEFILE)
 
 $(GLKLIBSTATIC): $(OBJS)
-	cd xpconfig && ./internal-build-script 
 	ar r $(GLKLIBSTATIC) $(OBJS)
 	ranlib $(GLKLIBSTATIC)
 
 $(GLKLIBSHARED): $(OBJS)
-	cd xpconfig && ./internal-build-script 
-	$(LINK) $(LDFLAGS) -shared -Wl,-soname,$(GLKLIBSHARED).$(MAJOR) -o $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(OBJS) $(LIBDIRS) $(LIBS) $(XPCONFIG)
+	$(LINK) $(LDFLAGS) -shared -Wl,-soname,$(GLKLIBSHARED).$(MAJOR) -o $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(OBJS) $(LIBDIRS) $(LIBS) 
 
 $(GLKMAKEFILE):
 	echo LINKLIBS = $(LIBDIRS) $(LIBS) > $(GLKMAKEFILE)
 	echo GLKLIB = -l$(GLKNAME) >> $(GLKMAKEFILE)
-
-glkfuncs.c: generate_glkfuncs.pl glk.h func.txt
-	./generate_glkfuncs.pl glk.h func.txt
 
 $(OBJS): $(HEADERS)
 
@@ -85,4 +78,4 @@ uninstall:
 	rmdir -p --ignore-fail-on-non-empty $(GLKLIBDIR)
 
 clean:
-	rm -f *~ *.o $(GLKLIBSTATIC) $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(GLKMAKEFILE) glkfuncs.c
+	rm -f *~ *.o $(GLKLIBSTATIC) $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(GLKMAKEFILE)

@@ -32,7 +32,13 @@
 #include <glk.h>
 
 #include "defines.h"
-#include "config.h"
+#include "xpconfig/xpconfig.h"
+
+/**
+ *  The name of the app, for xpconfig
+ */
+
+const char * APP_NAME = "glkloader";
 
 /**
  *  A global handle to the Glk library
@@ -41,27 +47,92 @@
 LIB_HANDLE gGlkLib;
 
 /**
- *  main() - load the Glk library and call its main routine
+ *  loadGlkLibrary() - load the Glk library and call its main routine
+ */
+
+int loadGlkLibrary( char * libName, int argc, char ** argv, char ** errBuf )
+{
+    int i, j;
+    int newArgC;
+    char ** newArgV;
+    int (*mainPtr)(char, char **);
+    int retVal;
+    xpcString * libFullName = NULL;
+    xpcStringList * newParams = NULL;
+
+    /* load given library */
+    libFullName = xpcReadString( APP_NAME, libName, "path" );
+    if (NULL == libFullName) {
+        /* no [libName] section found, so assume libName is the full name */
+        gGlkLib = loadLibrary( libName, errBuf );
+    } else {
+        gGlkLib = loadLibrary( libFullName->value, errBuf );
+    }
+    if (NULL != *errBuf) {
+        xpcFreeString( &libFullName );
+        return 0;
+    }
+
+    /* create the new argv array */
+    newParams = xpcReadStringList( APP_NAME, libName, "params" );
+    if (NULL == newParams) {
+        newArgC = argc;
+        newArgV = argv;
+    } else {
+        newArgC = argc + newParams->length;
+        newArgV = (char **) malloc( newArgC * sizeof(char *) );
+        newArgV[0] = argv[0];  
+        for (i = 1, j = 0; j < newParams->length; i++, j++) {
+            newArgV[i] = newParams->list[j]->value;
+        }
+        for (j = 1; j < argc; j++, i++) {
+            newArgV[i] = argv[j];
+        }
+    }
+
+    /* load the library's main function */ 
+    mainPtr = loadSymbol( gGlkLib, "main", errBuf );
+    if (NULL != *errBuf) {
+        xpcFreeString( &libFullName );
+        xpcFreeStringList( &newParams );
+        if (newArgV != argv) {
+            free( newArgV );
+        }
+        unloadLibrary( gGlkLib, errBuf );
+        return 0;
+    }
+
+    /* call the library's main function */
+    retVal = (*mainPtr)( newArgC, newArgV );
+
+    if (0 != retVal) {
+        unloadLibrary( gGlkLib, errBuf );
+    }
+
+    return retVal;
+}
+
+/**
+ *   main() - parse the command line and config file, and load the Glk lib
  */
 
 int main( int argc, char **argv )
 {
+    char * rcFilename = NULL;
+    char * libName = NULL;
+    BOOL isVerbose = FALSE;
+    char * errBuf = NULL;
+    xpcStringList * libList = NULL;
+    int i, j;
     int newArgC;
     char ** newArgV;
-    char * rcFileName = NULL;
-    char * libName = NULL;
-    char * libFullName = NULL;
-    char * errBuf = NULL;
-    int (*mainPtr)(char, char **);
-    int retVal;
-    int i, j;
     int glkParamIndex = -1;
     int rcParamIndex = -1;
+    int vParamIndex = -1;
     int numDroppedParams = 0;
-    int numNewParams = 0;
-    char ** newParams = NULL;
+    int retVal;
 
-    /* first pass : find the -glk and -rc parameters */
+    /* find the -glk and -rc parameters */
     for (i = 0; i < argc; i++) {
         if (strcmp( argv[i], "-glk" ) == 0) {
             glkParamIndex = i;
@@ -85,57 +156,79 @@ int main( int argc, char **argv )
                 usage( argv[0] );
                 exit( 1 );
             } else {
-                if (NULL != rcFileName) {
+                if (NULL != rcFilename) {
                     usage( argv[0] );
                     exit( 1 );
                 }
-                rcFileName = argv[i];
+                rcFilename = argv[i];
             }
+        } else if (strcmp( argv[i], "-v" ) == 0) {
+            vParamIndex = i;
+            numDroppedParams += 1;
+            i++;
+            isVerbose = TRUE;
         }
     }
+    xpcSetExtensionData( APP_NAME, rcFilename, isVerbose );
 
-    /* parse the config file */
-    readConfig( libName, rcFileName, &libFullName, &numNewParams, &newParams );
-    if (NULL == libFullName) {
-        usage( argv[0] );
-        exit( 1 );
-    }
-
-    /* second pass : create the new argv array */
-    newArgC = argc - numDroppedParams + numNewParams;
+    /* create a copy of argv without the -glk and -rc params */
+    newArgC = argc - numDroppedParams;
     newArgV = (char **) malloc( newArgC * sizeof(char *) );
-    newArgV[0] = argv[0];  
-    for (i = 1, j = 0; j < numNewParams; i++, j++) {
-        newArgV[i] = newParams[j];
-    }
-    for (j = 1; j < argc; j++, i++) {
+    for (i = 0, j = 0; j < argc; j++, i++) {
         if (j == glkParamIndex || j == rcParamIndex) {
             j += 2;
+        } else if (j == vParamIndex) {
+            j += 1;
         }
         if (j < argc) {
             newArgV[i] = argv[j];
         }
     }
 
+    /* read the config file */
+    xpcInitialize( APP_NAME );
+
     /* load the Glk library */
-    gGlkLib = loadLibrary( libFullName, &errBuf );
-    if (NULL != errBuf) {
-        error( errBuf );
-        exit( 1 );
+    if (NULL == libName) {
+        libList = xpcReadStringList( APP_NAME, "Default", "libs" );
+        if (NULL == libList) {
+            error( "No Glk library was specified on the command line or config file." );
+            xpcFinalize( APP_NAME );
+            free( newArgV );
+            exit( 1 );
+        }
+        for (i = 0; i < libList->length; i++) {
+            libName = libList->list[i]->value;
+            retVal = loadGlkLibrary( libName, newArgC, newArgV, &errBuf );
+            if (NULL != errBuf) {
+                error( errBuf );
+            } else if (0 == retVal) {
+                break;
+            }
+        }
+        if (NULL != errBuf || 0 != retVal) {
+            error( "Could not find a working Glk library." );
+            xpcFreeStringList( &libList );
+            xpcFinalize( APP_NAME );
+               free( newArgV );
+            exit( 1 );
+        }
+    } else {
+        retVal = loadGlkLibrary( libName, newArgC, newArgV, &errBuf );
+        if (NULL != errBuf) {
+            error( errBuf );
+        }
+        if (NULL != errBuf || 0 != retVal) {
+            error( "Could not load the specified Glk library." );
+            xpcFinalize( APP_NAME );
+            free( newArgV );
+            exit( 1 );
+        }
     }
-
-    /* load the library's main function */ 
-    mainPtr = loadSymbol( gGlkLib, "main", &errBuf );
-    if (NULL != errBuf) {
-        error( errBuf );
-        exit( 1 );
-    }
-
-    /* call the library's main function */
-    retVal = (*mainPtr)( newArgC, newArgV );
 
     /* free the configuration data  */
-    freeConfigData( &libFullName, &numNewParams, &newParams );
+    xpcFreeStringList( &libList );
+    xpcFinalize( APP_NAME );
 
     /* unload the Glk library */
     free( newArgV );

@@ -1,0 +1,12 @@
+xpconfig - cross-platform configuration parser
+Copyright 2001 by Joe Mason <jcmason@uwaterloo.ca>
+
+xpconfig is a simple library to read configuration information from a variety
+of sources.  Currently it can handle the following input sources:
+
+    - text files of the format
+	  
+	  [Section]
+	  key = value
+	  key = list, of, values
+

@@ -1,18 +1,22 @@
-# Unix Makefile for GlkLoader library
+# Unix Makefile for GlkTerm library
 
-# GlkLoader 0.3.2
+# Based on the original by Andrew Plotkin.  Modified to create a shared
+# library by Joe Mason.
+
+# GlkTerm 0.7.8
 MAJOR=0
-MINOR=3
-MICRO=2
+MINOR=7
+MICRO=8
 
-# This generates two files. One, of course, is libglkloader.a -- the library
-# itself. The other is Make.glkloader; this is a snippet of Makefile code
-# which locates the cheapglk library.
+# This generates two files. One, of course, is libglkterm.a -- the library
+# itself. The other is Make.glkterm; this is a snippet of Makefile code
+# which locates the glkterm library and associated libraries (such as
+# ncurses.)
 #
-# When you install glkloader, you must put libglkloader.a in the lib directory,
-# and glk.h, glkstart.h, and Make.glkloader in the include directory.
+# When you install glkterm, you must put libglkterm.a in the lib directory,
+# and glk.h, glkstart.h, and Make.glkterm in the include directory.
 
-GLKNAME = glkloader
+GLKNAME = glkterm
 GLKINCLUDEDIR = /usr/local/include/glk/
 GLKLIBDIR = /usr/local/lib/
 
@@ -22,44 +26,43 @@ CC = gcc
 LINK = gcc
 INSTALL = install -g 0 -o 0
 
-OPTIONS = -g -Wall -fPIC -DLINUX
+# You may need to set directories to pick up the ncurses library.
+#INCLUDEDIRS = -I/usr/5include
+#LIBDIRS = -L/usr/5lib 
 INCLUDEDIRS = -I$(GLKINCLUDEDIR)
+LIBS = -lncurses
+
+OPTIONS = -O -ansi -Wall -fPIC
 
 CFLAGS = $(OPTIONS) $(INCLUDEDIRS)
-LDFLAGS = -rdynamic
-LIBDIRS =
-LIBS = -ldl
-
-XPCONFIG = -Lxpconfig/.libs -lxpconfig
+LDFLAGS =
 
 GLKLIBSTATIC = lib$(GLKNAME).a
 GLKLIBSHARED = lib$(GLKNAME).so
 GLKMAKEFILE = Make.$(GLKNAME)
 
-OBJS =  \
-	glkloader.o glkfuncs.o blorbfuncs.o dispafuncs.o unixfuncs.o \
-    linux_defines.o gi_blorb.o gi_dispa.o
+OBJS = \
+  main.o gtevent.o gtfref.o gtgestal.o gtinput.o \
+  gtmessag.o gtmessin.o gtmisc.o gtstream.o gtstyle.o \
+  gtw_blnk.o gtw_buf.o gtw_grid.o gtw_pair.o gtwindow.o \
+  gtschan.o gtblorb.o gi_dispa.o gi_blorb.o
 
 HEADERS = \
-	defines.h linux_defines.h
+  glkterm.h gtoption.h gtw_blnk.h gtw_buf.h \
+  gtw_grid.h gtw_pair.h gi_dispa.h
 
 all: $(GLKLIBSTATIC) $(GLKLIBSHARED) $(GLKMAKEFILE)
 
 $(GLKLIBSTATIC): $(OBJS)
-	cd xpconfig && ./internal-build-script 
 	ar r $(GLKLIBSTATIC) $(OBJS)
 	ranlib $(GLKLIBSTATIC)
 
 $(GLKLIBSHARED): $(OBJS)
-	cd xpconfig && ./internal-build-script 
-	$(LINK) $(LDFLAGS) -shared -Wl,-soname,$(GLKLIBSHARED).$(MAJOR) -o $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(OBJS) $(LIBDIRS) $(LIBS) $(XPCONFIG)
+	$(LINK) $(LDFLAGS) -shared -Wl,-soname,$(GLKLIBSHARED).$(MAJOR) -o $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(OBJS) $(LIBDIRS) $(LIBS) 
 
 $(GLKMAKEFILE):
 	echo LINKLIBS = $(LIBDIRS) $(LIBS) > $(GLKMAKEFILE)
 	echo GLKLIB = -l$(GLKNAME) >> $(GLKMAKEFILE)
-
-glkfuncs.c: generate_glkfuncs.pl glk.h func.txt
-	./generate_glkfuncs.pl glk.h func.txt
 
 $(OBJS): $(HEADERS)
 
@@ -85,4 +88,4 @@ uninstall:
 	rmdir -p --ignore-fail-on-non-empty $(GLKLIBDIR)
 
 clean:
-	rm -f *~ *.o $(GLKLIBSTATIC) $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(GLKMAKEFILE) glkfuncs.c
+	rm -f *~ *.o $(GLKLIBSTATIC) $(GLKLIBSHARED).$(MAJOR).$(MINOR).$(MICRO) $(GLKMAKEFILE)

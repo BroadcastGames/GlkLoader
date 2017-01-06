@@ -1,0 +1,42 @@
+AC_INIT(xpconfig.c)
+
+dnl command-line arguments
+AC_ARG_WITH(method, [  --with-method=TYPE      use method TYPE for input (rcfile, xml or registry)])
+
+dnl check the input method and define the appropriate preprocessor symbols
+AC_MSG_CHECKING([method type])
+AM_CONDITIONAL(XPC_RCFILE, test X$with_method = Xrcfile)
+AM_CONDITIONAL(XPC_REGISTRY, test X$with_method = Xregistry)
+AM_CONDITIONAL(XPC_XML, test X$with_method = Xxml)
+if test "X$with_method" = "X"
+then
+	AC_MSG_ERROR([--with-method not given])
+else
+	if test "X$with_method" = "Xrcfile"
+	then
+		AC_DEFINE(XPC_RCFILE)
+		AC_MSG_RESULT([rcfile])
+	else
+		if test "X$with_method" = "Xregistry"
+		then
+			AC_DEFINE(XPC_REGISTRY)
+			AC_MSG_RESULT([registry])
+		else
+			if test "X$with_method" = "Xxml"
+			then
+				AC_DEFINE(XPC_XML)
+				AC_MSG_RESULT([xml])
+			else
+				AC_MSG_ERROR([$with_method is not a valid value for --with-method])
+			fi
+		fi
+	fi
+fi
+AC_SUBST(XPC_PLATFORM_FILE)
+
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(xpconfig,0.1)
+AC_PROG_CC
+AC_PROG_INSTALL
+AM_PROG_LIBTOOL
+AC_OUTPUT(Makefile)

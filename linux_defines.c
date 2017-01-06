@@ -78,7 +78,7 @@ SYM_HANDLE loadSymbol( LIB_HANDLE library, const char * symbol, char **
 
 void usage( const char * name )
 {
-    char * template = "Usage: %s [-glk <library>] [-rc <rcfile>] [library-specific options]";
+    char * template = "Usage: %s [-glk <library>] [-rc <rcfile>] [-v] [library-specific options]";
     char * buf = (char *) malloc( (strlen(template) + strlen(name)) *
                  sizeof(char) );
     
