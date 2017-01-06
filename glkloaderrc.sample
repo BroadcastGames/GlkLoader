@@ -1,0 +1,14 @@
+[Library]
+name = term
+path = libglkterm.so
+
+[Library]
+name = x
+path = libxglk.so
+
+[Library]
+name = cheap
+path = libcheapglk.so
+
+[Default]
+lib = x

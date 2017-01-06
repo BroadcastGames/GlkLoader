@@ -1,0 +1,92 @@
+About GlkLoader
+===============
+
+GlkLoader is an implementation of the the Glk specification which simply loads
+another Glk library and passes all Glk calls through to it.  The purpose is to
+allow a single executable to choose which Glk library to use at run-time,
+instead of at compile-time.
+
+To use, simply link your Glk program with the glkloader library, in the same
+manner you would link to any other Glk library.  Then run your program with
+the following syntax:
+
+  <executable> -glk <library> [library specific options]
+
+For instance, to run GlkDungeon using the CheapGlk library, use
+
+  dungeon -glk libcheapglk.so
+
+To run GlkDungeon using the GlkTerm library, and pass in some GlkTerm options,
+use something like:
+
+  dungeon -glk libglkterm.so -revgrid yes -border no
+
+GlkLoader can load libraries in the standard system library path: to use a
+library located elsewhere, either add the path to the LD_LIBRARY_PATH
+environment variable or use a full path name on the command line.
+
+Using Configuration Files
+=========================
+
+GlkLoader can read default settings from a configuration file.  By default,
+it reads the file ~/.glkloaderrc, but you can override this using the "-rc
+<filename>" switch.
+
+The config file consists of a series of section headers, each of which is
+followed by key/value pairs.  A key value pair is of the form "key = value".
+The sections and keys are as follows:
+
+  [Library]
+    name : a short name GlkLoader can use to identify this library
+    path : the full path of the library file (or, if the file is in the system
+           library path, simply the full name)
+
+  [Default]
+    lib  : the name or path of the default library to load
+
+For example, you could use the following simple configuration file:
+
+  [Library]
+    name = x
+    path = /usr/local/glk/xglk/libxglk.so
+
+  [Libary]
+    name = term
+    path = /usr/local/glk/glkterm/libglkterm.so
+
+Then you could use the glkterm library by simply saying "-glk term" on the
+command line, rather than using the entire path.  If you add a [Default]
+section containing the line "lib = term", then you don't even need to do that.
+GlkLoader will use the glkterm library if you don't give it any -glk argument
+at all.
+
+A sample configuration file is included as glkloaderrc.sample.
+
+Compiling GlkLoader
+===================
+
+There are a few things that need to be done when compiling your main Glk
+library and main program:
+
+1) Compile Glk as a shared library.
+The accompanying makefile (based on the CheapGlk / GlkTerm / XGlk makefiles) is 
+an example of how to do this.
+
+2) Make certain your shared libraries contain full dependency information.
+Simply make sure you include all libraries your Glk library uses in the
+arguments to ld.  Since the provided makefiles already collect these in the
+$(LIBS) variable, you can simply add $(LIBS) to the end of the ld arguments.
+
+3) Add -rdynamic to the argument list of ld in your main program.
+This ensures that all symbols in the main program are exported to all dynamic
+libraries, no matter when they are loaded.
+
+Further Information
+===================
+
+For more information on Glk, see the homepage at 
+http://www.eblong.com/zarf/glk.  For more information on GlkLoader, contact
+Joe Mason at jcmason@uwaterloo.ca.  Comments and suggestions welcome!
+
+GlkLoader is distributed under a BSD license.  See the accompanying License.txt
+file for details.
